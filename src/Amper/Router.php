@@ -1,5 +1,5 @@
 <?php
-namespace core;
+namespace Amper;
 
 class Router {
 

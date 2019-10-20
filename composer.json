@@ -10,7 +10,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Amper": "core"
+      "Amper\\": "src/Amper"
     }
   }
 }

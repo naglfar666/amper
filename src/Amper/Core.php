@@ -1,10 +1,10 @@
 <?php
-namespace core;
+namespace Amper;
 
 use Router;
 use Request;
 use Response;
-use \api\Routes;
+// use \api\Routes;
 
 class Core {
 
@@ -19,7 +19,7 @@ class Core {
     self::$Router = new Router;
     self::$Request = new Request;
     self::$Response = new Response;
-    new Routes;
+    // new Routes;
 
     Request::parseRequestBody(self::$Request);
     Request::parseRequestQuery(self::$Request);

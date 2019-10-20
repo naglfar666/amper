@@ -1,5 +1,5 @@
 <?php
-namespace core;
+namespace Amper;
 
 Class Request {
 
