@@ -1,11 +1,6 @@
 <?php
 namespace Amper;
 
-use Router;
-use Request;
-use Response;
-// use \api\Routes;
-
 class Core {
 
   public static $Router;
@@ -16,15 +11,18 @@ class Core {
 
   public function run() : void
   {
+    // Объявляем ключевые элементы
     self::$Router = new Router;
     self::$Request = new Request;
     self::$Response = new Response;
-    // new Routes;
-
+    // Регистрируем маршруты
+    $Routes = new \App\Routes();
+    $Routes->_register(self::$Router);
+    // Парсим тело запроса
     Request::parseRequestBody(self::$Request);
     Request::parseRequestQuery(self::$Request);
     Request::parseRequestHeaders(self::$Request);
-
+    // Подбираем необходимый путь
     $routeFound = self::$Router->findRoute();
 
     if (sizeof($routeFound) != 0) {
@@ -41,10 +39,17 @@ class Core {
     }
 
   }
-
-  private function callControllerMethod(string $controller) : void
+  /**
+   * Вызываем контроллер
+   */
+  private function callControllerMethod(string $handler) : void
   {
-    call_user_func($controller, self::$Request, self::$Response);
+    $handlerArray = explode('@', $handler);
+
+    $controllerName = '\\App\\Controllers\\'.$handlerArray[0];
+    $Controller = new $controllerName();
+    $Method = $handlerArray[1];
+    $Controller->$Method(self::$Request, self::$Response);
     self::$Response->execute();
   }
 }
