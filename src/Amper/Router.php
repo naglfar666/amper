@@ -14,12 +14,22 @@ class Router {
     return $this;
   }
 
-  public function post($path, $callback) : Router
+  public function post(string $path, string $callback) : Router
   {
     $this->routePatterns[$path] = [
       'method' => 'POST',
       'callback' => $callback,
     ];
+    return $this;
+  }
+
+  public function group(string $path, array $routes) : Router
+  {
+    $path = trim($path, '/');
+    foreach ($routes as $route) {
+      $method = strtolower($route[0]);
+      $this->$method($path.'/'.$route[1], $route[2]);
+    }
     return $this;
   }
 
