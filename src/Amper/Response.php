@@ -16,7 +16,14 @@ class Response {
       if ($this->meta) $Result['meta'] = $this->meta;
       if ($this->data) $Result['data'] = $this->data;
       echo json_encode($Result,JSON_UNESCAPED_UNICODE);
+    } else {
+      echo $this->data;
     }
+  }
+
+  public function finish()
+  {
+    exit;
   }
 
   public function toJson() : Response
@@ -41,7 +48,7 @@ class Response {
     return $this->meta;
   }
 
-  public function setData(array $data) : Response
+  public function setData($data) : Response
   {
     $this->data = $data;
     return $this;

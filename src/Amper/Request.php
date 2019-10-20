@@ -29,6 +29,8 @@ Class Request {
   		}
     } elseif($_SERVER['REQUEST_METHOD'] == 'GET') {
       $requestBody = [];
+    } elseif($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+      $requestBody = [];
     }
 
     $Request->setBody($requestBody);

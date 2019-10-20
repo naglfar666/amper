@@ -5,30 +5,42 @@ class Router {
 
   private $routePatterns = [];
 
-  public function get(string $path, string $callback) : Router
+  public function get(string $path, string $callback, array $middlewares = []) : Router
   {
     $this->routePatterns[$path] = [
       'method' => 'GET',
       'callback' => $callback,
+      'middlewares' => $middlewares,
     ];
     return $this;
   }
 
-  public function post(string $path, string $callback) : Router
+  public function post(string $path, string $callback, array $middlewares = []) : Router
   {
     $this->routePatterns[$path] = [
       'method' => 'POST',
       'callback' => $callback,
+      'middlewares' => $middlewares,
     ];
     return $this;
   }
 
-  public function group(string $path, array $routes) : Router
+  public function options(string $path, string $callback, array $middlewares = []) : Router
+  {
+    $this->routePatterns[$path] = [
+      'method' => 'OPTIONS',
+      'callback' => $callback,
+      'middlewares' => $middlewares,
+    ];
+    return $this;
+  }
+
+  public function group(string $path, array $routes, array $middlewares = []) : Router
   {
     $path = trim($path, '/');
     foreach ($routes as $route) {
       $method = strtolower($route[0]);
-      $this->$method($path.'/'.$route[1], $route[2]);
+      $this->$method($path.'/'.$route[1], $route[2], $middlewares);
     }
     return $this;
   }
@@ -41,11 +53,17 @@ class Router {
   public function findRoute() : array
   {
     $Patterns = $this->getRoutePatterns();
+
     foreach ($Patterns as $pattern => $values) {
       if (strtoupper($_SERVER['REQUEST_METHOD']) == strtoupper($values['method'])) {
         $pattern = $this->preparePattern($pattern);
-        // $url = $this->prepareUrl();
-
+        // Если у нас имеется глобальное обозначение
+        if (stristr($pattern['regex'], '*')) {
+          if (preg_match_all($pattern['regex'],$this->prepareUrl())) {
+            return array_merge($values,['params'=>[]]);
+          }
+        }
+        // Во всех остальных случаях прогоняем по параметрам
         if (preg_match($pattern['regex'],$this->prepareUrl(),$params)) {
           $paramsResult = [];
           for ($i = 0; $i < count($pattern['expectedParams']); $i++) {
@@ -62,21 +80,29 @@ class Router {
 
   public function preparePattern(string $pattern) : array
   {
-    $patternArray = explode('/', trim($pattern, '/'));
-    $expectedParams = [];
-    foreach ($patternArray as $key => $value) {
-      if (stristr($value, '{')) {
+    if (stristr($pattern, '*')) {
+      return [
+        'regex' => '#'.str_replace('*','(.*)',trim($pattern, '/')).'#',
+        'expectedParams' => []
+      ];
+    } else {
+      $patternArray = explode('/', trim($pattern, '/'));
+      $expectedParams = [];
+      foreach ($patternArray as $key => $value) {
+        if (stristr($value, '{')) {
 
-        $expectedParams[] = preg_replace('/[^A-Za-z0-9]/', '', $value);
+          $expectedParams[] = preg_replace('/[^A-Za-z0-9]/', '', $value);
 
-        $value = str_replace('{', '(?<', $value);
-        $patternArray[$key] = str_replace('}', '>\w+)', $value);
+          $value = str_replace('{', '(?<', $value);
+          $patternArray[$key] = str_replace('}', '>\w+)', $value);
+        }
       }
+      return [
+        'regex' => '#^'.implode('/',$patternArray).'$#',
+        'expectedParams' =>$expectedParams,
+      ];
     }
-    return [
-      'regex' => '#^'.implode('/',$patternArray).'$#',
-      'expectedParams' =>$expectedParams,
-    ];
+
   }
 
   public function prepareUrl() : string

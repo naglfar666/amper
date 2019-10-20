@@ -1,6 +1,5 @@
 <?php
 namespace Amper;
-
 class Core {
 
   public static $Router;
@@ -29,6 +28,10 @@ class Core {
       self::$Request->setParams($routeFound['params']);
       self::$Request->setMethod($routeFound['method']);
 
+      foreach ($routeFound['middlewares'] as $middleware) {
+        $this->callMiddleware($middleware);
+      }
+
       $this->callControllerMethod($routeFound['callback']);
     } else {
       self::$Response
@@ -51,6 +54,13 @@ class Core {
     $Method = $handlerArray[1];
     $Controller->$Method(self::$Request, self::$Response);
     self::$Response->execute();
+  }
+
+  private function callMiddleware(string $middlewareName) : void
+  {
+    $middlewareName = '\\App\\Middleware\\'.$middlewareName;
+    $middleware = new $middlewareName();
+    $middleware->handle(self::$Request, self::$Response);
   }
 }
 ?>
