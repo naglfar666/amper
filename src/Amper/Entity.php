@@ -7,7 +7,7 @@ class Entity {
   /**
    * Массив всех сущностей с параметрами, методами и аннотациями
    */
-  protected static $Entities;
+  private static $Entities;
   /**
    * Текущая дочерняя сущность, с которой мы работаем
    */
@@ -51,6 +51,22 @@ class Entity {
     return $result;
   }
   /**
+   * Получение всех полей для БД
+   */
+  protected function getFields() : array
+  {
+    $result = [];
+    foreach ($this->EntityInfo['properties'] as $key => $value) {
+      $result[] = $this->_searchPropertyAnnotation(
+        $value,
+        $key,
+        'Field',
+        'name'
+      );
+    }
+    return $result;
+  }
+  /**
    * Получение таблицы сущности
    */
   protected function getTable() : string
@@ -71,6 +87,36 @@ class Entity {
   protected function getEntityInfo() : array
   {
     return $this->EntityInfo;
+  }
+  /**
+   * Поиск информации о свойстве в сущности
+   *
+   * @param array $propertyAnnotations - Массив всех аннотаций к свойству
+   * @param string $propertyName - Имя свойства
+   * @param string $annotationName - Имя аннотации
+   * @param string $param - Искомый параметр в аннотации
+   *
+   * Пример:
+   * @Field($annotationName) : name($param)=fname, type=varchar, length=255
+   */
+  private function _searchPropertyAnnotation(array $propertyAnnotations, string $propertyName, string $annotationName, string $param) : string
+  {
+    $annotationExists = array_values(array_filter($propertyAnnotations, function ($el) use (&$annotationName) {
+      return $el['annotation'] == $annotationName;
+    }))[0];
+
+    if (!$annotationExists || !$annotationExists['params']) {
+      return $propertyName;
+    }
+
+    $paramExists = array_values(array_filter($annotationExists['params'], function ($el) use (&$param) {
+      return $el[0] == $param;
+    }))[0];
+
+    if (!$paramExists) {
+      return $propertyName;
+    }
+    return $paramExists[1];
   }
   /**
    * При любой попытке вызова методов класса обновляем информацию о текущей сущности
