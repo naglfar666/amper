@@ -1,5 +1,6 @@
 <?php
 namespace Amper;
+
 class Core {
 
   public static $Router;
@@ -8,8 +9,11 @@ class Core {
 
   private static $Response;
 
+  public static $DatabaseConfig;
+
   public function run() : void
   {
+    $this->loadConfig();
     // Объявляем ключевые элементы
     self::$Router = new Router;
     self::$Request = new Request;
@@ -23,6 +27,9 @@ class Core {
     Request::parseRequestHeaders(self::$Request);
     // Подбираем необходимый путь
     $routeFound = self::$Router->findRoute();
+
+    $Entity = new Entity;
+    $Entity->_registerEntities();
 
     if (sizeof($routeFound) != 0) {
       self::$Request->setParams($routeFound['params']);
@@ -55,12 +62,21 @@ class Core {
     $Controller->$Method(self::$Request, self::$Response);
     self::$Response->execute();
   }
-
+  /**
+   * Вызываем промежуточные обработчики
+   */
   private function callMiddleware(string $middlewareName) : void
   {
     $middlewareName = '\\App\\Middleware\\'.$middlewareName;
     $middleware = new $middlewareName();
     $middleware->handle(self::$Request, self::$Response);
+  }
+  /**
+   * Подгружаем конфиги приложения
+   */
+  private function loadConfig() : void
+  {
+    self::$DatabaseConfig = require_once(GLOBAL_DIR.'/config/database.php');
   }
 }
 ?>
