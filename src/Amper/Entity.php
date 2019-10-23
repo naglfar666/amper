@@ -14,6 +14,11 @@ class Entity {
   private $EntityInfo;
 
   /**
+   * Набор полей с названиями для БД
+   */
+  private $EntityFields = null;
+
+  /**
    * Регистрируем все подключенные сущности
    */
   public function _registerEntities() : void
@@ -25,6 +30,7 @@ class Entity {
       // Получаем класс каждой сущности
       $Data = new \ReflectionClass('\\App\\Entities\\'.$entity);
       $Properties = $Data->getProperties(); // Все свойства сущности
+      $Methods = $Data->getMethods(); // Все методы сущности
       $Entity_Name = $Data->getName(); // Имя сущности с пространствами имен
       self::$Entities[$Entity_Name] = [
         'info' => Utils\Parser::parseDocComments($Data->getDocComment()),
@@ -34,6 +40,9 @@ class Entity {
       // Разбираем все аннотации к свойствам сущности
       for ($i = 0; $i < count($Properties); $i++) {
         self::$Entities[$Entity_Name]['properties'][$Properties[$i]->getName()] = Utils\Parser::parseDocComments($Properties[$i]->getDocComment());
+      }
+      for ($i = 0; $i < count($Methods); $i++) {
+        self::$Entities[$Entity_Name]['methods'][$Methods[$i]->getName()] = Utils\Parser::parseDocComments($Methods[$i]->getDocComment());
       }
 
       // var_dump($Data->getMethods()[0]->getDocComment());
@@ -55,6 +64,10 @@ class Entity {
    */
   protected function getFields() : array
   {
+    if ($this->EntityFields != null) {
+      return $this->EntityFields;
+    }
+    
     $result = [];
     foreach ($this->EntityInfo['properties'] as $key => $value) {
       $result[] = $this->_searchPropertyAnnotation(
@@ -64,6 +77,9 @@ class Entity {
         'name'
       );
     }
+
+    $this->EntityFields = $result;
+
     return $result;
   }
   /**

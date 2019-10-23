@@ -39,6 +39,15 @@ class DbConnector {
 		}
 		return $result;
   }
+  /**
+   * Добавление новой записи
+   */
+  public function insert($query, $prepare)
+  {
+    $handle = $this->PDO->prepare($query);
+		$handle->execute($prepare);
+    return $this->PDO->lastInsertId();
+  }
 
   public function __destruct() {
 		$this->PDO = null;
