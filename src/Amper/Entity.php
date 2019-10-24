@@ -49,6 +49,20 @@ class Entity {
     }
   }
   /**
+   * Моментальная установка всех сущностей
+   */
+  public function setEntities($data)
+  {
+    self::$Entities = $data;
+  }
+  /**
+   * Получение всех зарегистрированных сущностей
+   */
+  public function getEntities()
+  {
+    return self::$Entities;
+  }
+  /**
    * Получение всех свойств сущности
    */
   protected function getProperties() : array
@@ -67,7 +81,7 @@ class Entity {
     if ($this->EntityFields != null) {
       return $this->EntityFields;
     }
-    
+
     $result = [];
     foreach ($this->EntityInfo['properties'] as $key => $value) {
       $result[] = $this->_searchPropertyAnnotation(

@@ -50,6 +50,11 @@ class Router {
     return $this->routePatterns;
   }
 
+  public function setRoutePatterns(array $patterns) : void
+  {
+    $this->routePatterns = $patterns;
+  }
+
   public function findRoute() : array
   {
     $Patterns = $this->getRoutePatterns();
