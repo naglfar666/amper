@@ -45,11 +45,14 @@ class Core {
 
       $this->callControllerMethod($routeFound['callback']);
     } else {
-      self::$Response
+      if (function_exists('getallheaders')) {
+        self::$Response
         ->setStatus(404)
         ->setMeta(['type'=>'error','text'=>'Request URL is not valid'])
         ->toJson()
         ->execute();
+      }
+      
     }
 
   }

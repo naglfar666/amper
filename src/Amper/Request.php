@@ -12,9 +12,8 @@ Class Request {
 
   public static function parseRequestBody(Request $Request) : void
   {
-
+    $requestBody = [];
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-      $requestBody = [];
       $phpinput = file_get_contents("php://input");
   		if ($phpinput != ''){
   			$_POST['phpinput'] = $phpinput;
@@ -27,10 +26,6 @@ Class Request {
           $requestBody = $_POST;
         }
   		}
-    } elseif($_SERVER['REQUEST_METHOD'] == 'GET') {
-      $requestBody = [];
-    } elseif($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-      $requestBody = [];
     }
 
     $Request->setBody($requestBody);
@@ -61,7 +56,9 @@ Class Request {
 
   public static function parseRequestHeaders(Request $Request) : void
   {
-    $Request->setHeaders(getallheaders());
+    if (function_exists('getallheaders')) {
+      $Request->setHeaders(getallheaders());
+    }
   }
 
   public function getBody() : array

@@ -11,6 +11,7 @@ class Migrate extends Entity{
   {
     $Entities = $this->getEntities();
     foreach ($Entities as $key => $value) {
+      echo 'Refreshing entity: ' . $key . PHP_EOL;
       $table = $value['info'][0]['params'][0][1];
       $this->_drop($table);
       $fields = $this->_prepareFields($value['properties']);
@@ -22,6 +23,7 @@ class Migrate extends Entity{
    */
   private function _drop($table)
   {
+    echo 'Dropping table: ' . Core::$DatabaseConfig['connection']['prefix'] . $table . PHP_EOL;
     $db = new DbConnector;
     $db->query('DROP TABLE IF EXISTS ' . Core::$DatabaseConfig['connection']['prefix'] . $table);
   }
@@ -30,6 +32,7 @@ class Migrate extends Entity{
    */
   private function _create($table, $fields)
   {
+    echo 'Creating table: ' . Core::$DatabaseConfig['connection']['prefix'] . $table . PHP_EOL;
     $db = new DbConnector;
     $db->query('CREATE TABLE IF NOT EXISTS ' . Core::$DatabaseConfig['connection']['prefix'] . $table . ' ' . $fields);
   }
