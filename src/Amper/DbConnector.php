@@ -31,6 +31,10 @@ class DbConnector {
   {
     $handle = $this->PDO->prepare($query);
 		$handle->execute($prepare);
+    $errors = $handle->errorInfo();
+    if ($errors[1] > 0) {
+      throw new \Exception($errors[2]);
+    }
 		$result = [];
 		$i = 0;
 		while ($row = $handle->fetch(PDO::FETCH_ASSOC)) {
@@ -46,6 +50,10 @@ class DbConnector {
   {
     $handle = $this->PDO->prepare($query);
 		$handle->execute($prepare);
+    $errors = $handle->errorInfo();
+    if ($errors[1] > 0) {
+      throw new \Exception($errors[2]);
+    }
     return $this->PDO->lastInsertId();
   }
 

@@ -1,6 +1,8 @@
 <?php
 namespace Amper;
 
+use \Amper\Utils\EntityHandler;
+
 class CrudRepository {
 
   private $Entity;
@@ -108,20 +110,20 @@ class CrudRepository {
    */
   private function generateInsertFields($Entity)
   {
-    $fields = $this->Entity->getFields();
-
+    $EntityInfo = $this->Entity->getEntityInfo();
+    
     $insertFields = '(';
     $insertValues = '(';
     $prepareResult = [];
-    for ($i = 0; $i < count($fields); $i++) {
-      $methodName = 'get'.ucfirst($fields[$i]);
+    foreach ($EntityInfo['properties'] as $key => $value) {
+      $methodName = 'get'.ucfirst($key);
       $property = $Entity->$methodName();
-      if ($property != null) {
-        $insertFields .= $fields[$i] . ',';
-        $insertValues .= ':' . $fields[$i] . ',';
-        $prepareResult[':' . $fields[$i]] = $property;
-      }
+      $fieldRealName = EntityHandler::getFieldName($key, $value);
+      $insertFields .= $fieldRealName . ',';
+      $insertValues .= ':' . $fieldRealName . ',';
+      $prepareResult[':' . $fieldRealName] = $property;
     }
+
     $insertFields = rtrim($insertFields, ',') . ')';
     $insertValues = rtrim($insertValues, ',') . ')';
 
@@ -135,22 +137,24 @@ class CrudRepository {
    */
   private function generateUpdateFields($Entity)
   {
-    $fields = $this->Entity->getFields();
+    $EntityInfo = $this->Entity->getEntityInfo();
 
     $updateFields = '';
     $prepareResult = [];
-    for ($i = 0; $i < count($fields); $i++) {
-      $methodName = 'get'.ucfirst($fields[$i]);
+
+    foreach ($EntityInfo['properties'] as $key => $value) {
+      $methodName = 'get'.ucfirst($key);
       $property = $Entity->$methodName();
 
-      if ($fields[$i] == 'id') {
-        $prepareResult[':' . $fields[$i]] = $property;
+      $fieldRealName = EntityHandler::getFieldName($key, $value);
+      if ($fieldRealName == 'id') {
+        $prepareResult[':' . $fieldRealName] = $property;
         continue;
       }
 
       if ($property != null) {
-        $updateFields .= $fields[$i] . '=:' . $fields[$i] . ', ';
-        $prepareResult[':' . $fields[$i]] = $property;
+        $updateFields .= $fieldRealName . '=:' . $fieldRealName . ', ';
+        $prepareResult[':' . $fieldRealName] = $property;
       }
     }
 
