@@ -179,6 +179,24 @@ class CrudRepository {
     $query_array = array_map(function ($el) {
       return mb_strtolower($el);
     }, $query_array);
+
+    for ($i = 0; $i < count($query_array); $i++) {
+      if ($query_array[$i] == 'by') {
+        if (isset($query_array[$i + 2]) 
+          && $query_array[$i + 2] != 'or' 
+          && $query_array[$i + 2] != 'and' 
+          && $query_array[$i + 2] != 'asc' 
+          && $query_array[$i + 2] != 'desc' 
+          && $query_array[$i + 2] != 'limit' 
+        ) {
+          $query_array[$i + 1] = $query_array[$i + 1] . '_' . $query_array[$i + 2];
+          unset($query_array[$i + 2]);
+        }
+      }
+    }
+    
+    $query_array = array_values($query_array);
+    
     // Все поля сущности
     $fields = $this->Entity->getFields();
 
