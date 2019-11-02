@@ -180,22 +180,37 @@ class CrudRepository {
       return mb_strtolower($el);
     }, $query_array);
 
+    // Получаем настоящие названия полей в таблицу
+    $KeyWords = ['by', 'or', 'and', 'asc', 'desc', 'limit', 'order' ];
+    $RealFields = [];
     for ($i = 0; $i < count($query_array); $i++) {
-      if ($query_array[$i] == 'by') {
-        if (isset($query_array[$i + 2]) 
-          && $query_array[$i + 2] != 'or' 
-          && $query_array[$i + 2] != 'and' 
-          && $query_array[$i + 2] != 'asc' 
-          && $query_array[$i + 2] != 'desc' 
-          && $query_array[$i + 2] != 'limit' 
-        ) {
-          $query_array[$i + 1] = $query_array[$i + 1] . '_' . $query_array[$i + 2];
-          unset($query_array[$i + 2]);
+      if (in_array($query_array[$i], $KeyWords)) {
+        $RealFields[] = $query_array[$i];
+        if (in_array($query_array[$i + 1], $KeyWords)) { continue; }
+        $expectedPropertyName = $query_array[$i + 1];
+        $iterator = 2;
+        while (true) {
+          if (isset($query_array[$i + $iterator]) && !in_array($query_array[$i + $iterator], $KeyWords) 
+          ) {
+            $expectedPropertyName .= ucfirst($query_array[$i + $iterator]);
+          } else {
+            break;
+          }
+          $iterator++;
         }
+        if (isset($this->Entity->getEntityInfo()['properties'][$expectedPropertyName])) {
+          $RealFields[] = EntityHandler::getFieldName($expectedPropertyName, $this->Entity->getEntityInfo()['properties'][$expectedPropertyName]);
+        } else {
+          throw new \Exception('Entity property ' . $expectedPropertyName . ' not found', 1);
+        }
+        
       }
     }
+    if (in_array('all', $query_array)) {
+      array_unshift($RealFields, 'all');
+    }
     
-    $query_array = array_values($query_array);
+    $query_array = $RealFields;
     
     // Все поля сущности
     $fields = $this->Entity->getFields();
@@ -257,9 +272,10 @@ class CrudRepository {
 
       }
     }
+    
     // Выборка множества записей
     $multiple = false;
-    if (array_search('all', $query_array)) {
+    if (array_search('all', $query_array) !== false) {
       $multiple = true;
     }
 

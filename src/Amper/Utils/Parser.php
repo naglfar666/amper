@@ -24,7 +24,7 @@ class Parser {
         if (isset($arg_array[1])) {
             $arg_params = explode(',', $arg_array[1]);
             for ($x = 0; $x < count($arg_params); $x++) {
-              $arg_params[$x] = explode('=', $arg_params[$x]);
+              $arg_params[$x] = explode('=', str_replace("\r",'',str_replace("\n",'',$arg_params[$x])));
             }
         }
         // Каждая аннотация возвращается вместе с параметрами
