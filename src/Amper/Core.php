@@ -13,6 +13,8 @@ class Core {
 
   public static $CacheConfig;
 
+  public static $QueueConfig;
+
   public function run() : void
   {
     define('AMPER_DIR', __DIR__);
@@ -85,6 +87,7 @@ class Core {
   {
     self::$DatabaseConfig = require_once(GLOBAL_DIR.'/config/database.php');
     self::$CacheConfig = require_once(GLOBAL_DIR.'/config/cache.php');
+    self::$QueueConfig = require_once(GLOBAL_DIR.'/config/queue.php');
   }
   /**
    * Подгрузить кеши

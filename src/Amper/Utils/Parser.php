@@ -37,5 +37,13 @@ class Parser {
 
     return $result;
   }
+  /**
+   * Возвращаем microtime в виде float
+   */
+  public static function parseMicrotime($time)
+  {
+    list($usec, $sec) = explode(' ', $time);
+    return ((float)$usec + (float)$sec);
+  }
 }
 ?>
