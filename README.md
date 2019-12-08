@@ -18,7 +18,7 @@ In order to use queues install predis library and pm2:
 composer require predis/predis
 npm i -g pm2
 ```
-package.json example:
+composer.json example:
 ```json
 {
     "require": {
