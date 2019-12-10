@@ -1,0 +1,24 @@
+AddDefaultCharset UTF-8
+RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule .* index.php [L]
+
+
+<files .htaccess="">
+order allow,deny
+deny from all
+</files>
+
+<Files "*.php">
+    Order Deny,Allow
+    Deny from all
+</Files>
+<Files "index.php">
+    Order Deny,Allow
+    Allow from all
+</Files>
+
+<Files ~ "\.(avi|tpl|p)$">
+	Order allow,deny
+	Deny from all
+</Files>
