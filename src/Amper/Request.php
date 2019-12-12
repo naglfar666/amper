@@ -19,13 +19,18 @@ Class Request {
   			$_POST['phpinput'] = $phpinput;
   		}
 
-  		if (isset(getallheaders()['Content-Type'])) {
-  			if (mb_stristr(getallheaders()['Content-Type'], 'application/json')) {
-  				$requestBody = json_decode($_POST['phpinput'], true);
-  			} else {
-          $requestBody = $_POST;
+  		$Headers = getallheaders();
+  		$contentType = null;
+  		foreach ($Headers as $key => $value) {
+  		  if (mb_stristr(strtolower($key), 'content-type')) {
+          $contentType = strtolower($value);
         }
-  		}
+      }
+  		if (mb_stristr($contentType, 'application/json')) {
+        $requestBody = json_decode($_POST['phpinput'], true);
+      } else {
+        $requestBody = $_POST;
+      }
     }
 
     $Request->setBody($requestBody);
