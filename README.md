@@ -7,6 +7,14 @@ To install via composer use:
 ```
 composer require naglfar/amper:dev-master
 ```
+You can initiate your project with default installer. Create install.php in your root directory and run it:
+```php
+define('GLOBAL_DIR', __DIR__);
+require_once(GLOBAL_DIR.'/vendor/autoload.php');
+$Installer = new Amper\Installer;
+$Installer->start();
+```
+If you don't want to use installer, use the manual below:
 
 Create index.php file in your project's root directory:
 ```php
