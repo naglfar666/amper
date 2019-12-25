@@ -62,6 +62,15 @@ Configurate your project according to the structure below:
    - cache.php
    - database.php
    - queue.php
+   - modules.php
+- modules
+  - example
+    - Controllers
+    - Entities
+    - Middleware
+    - Repositories
+    - EntityLoader.php
+    - Routes.php
 - index.php
 - migrate.php
 - queue.php
@@ -342,3 +351,48 @@ while (true) {
 }
 ```
 To hold your loop 24/7 and control memory leaks use pm2. Example: "pm2 start queue.php".
+
+### Modules
+You can add already written modules to your project with 2 lines of code.
+Firstly configure modules.php of your config:
+```php
+return [
+  'modules' => [
+    'App',
+    'ExampleModule'
+  ]
+];
+```
+Second step is adding namespaces of the module to composer autoloader:
+```json
+{
+    "require": {
+        "naglfar/amper": "dev-master",
+        "predis/predis": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "ExampleModule\\": "modules/example/"
+        }
+    }
+}
+```
+Each module must have EntityLoader class, returning list of Entities from _register():
+```php
+namespace ExampleModule;
+
+
+class EntityLoader
+{
+  public function _register()
+  {
+    return [
+      'NewsEntity',
+      'DatasEntity',
+      'TestEntity'
+    ];
+  }
+}
+```
+Modules behave as usual Controllers, Middlewares, Entities and Repositories. So after connecting module to the project it will automatically use it's Entities for migrations and Routes for routing. Also modules doesn't have it's own database connection, so general prefixes and database will be used.
