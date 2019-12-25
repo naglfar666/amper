@@ -9,11 +9,19 @@ class Core {
 
   private static $Response;
 
+  public static $ModuleWatching;
+
+  public static $Modules;
+
   public static $DatabaseConfig;
 
   public static $CacheConfig;
 
   public static $QueueConfig;
+
+  public static $ModulesConfig;
+
+  public static $ModulesEntities = [];
 
   public function run() : void
   {
@@ -21,6 +29,8 @@ class Core {
     $this->loadConfig();
     $this->loadScriptCache();
     // Объявляем ключевые элементы
+    self::$Modules = self::$ModulesConfig['modules'];
+    $this->loadModulesEntities();
     self::$Router = new Router;
     self::$Request = new Request;
     self::$Response = new Response;
@@ -42,10 +52,10 @@ class Core {
       self::$Request->setMethod($routeFound['method']);
 
       foreach ($routeFound['middlewares'] as $middleware) {
-        $this->callMiddleware($middleware);
+        $this->callMiddleware($middleware, $routeFound['module']);
       }
 
-      $this->callControllerMethod($routeFound['callback']);
+      $this->callControllerMethod($routeFound['callback'], $routeFound['module']);
     } else {
       if (function_exists('getallheaders')) {
         self::$Response
@@ -58,25 +68,31 @@ class Core {
     }
 
   }
+
   /**
    * Вызываем контроллер
+   * @param string $handler
+   * @param string $moduleName
    */
-  private function callControllerMethod(string $handler) : void
+  private function callControllerMethod(string $handler, string $moduleName) : void
   {
     $handlerArray = explode('@', $handler);
 
-    $controllerName = '\\App\\Controllers\\'.$handlerArray[0];
+    $controllerName = '\\'.$moduleName.'\\Controllers\\'.$handlerArray[0];
     $Controller = new $controllerName();
     $Method = $handlerArray[1];
     $Controller->$Method(self::$Request, self::$Response);
     self::$Response->execute();
   }
+
   /**
    * Вызываем промежуточные обработчики
+   * @param string $middlewareName
+   * @param string $moduleName
    */
-  private function callMiddleware(string $middlewareName) : void
+  private function callMiddleware(string $middlewareName, string $moduleName) : void
   {
-    $middlewareName = '\\App\\Middleware\\'.$middlewareName;
+    $middlewareName = '\\'.$moduleName.'\\Middleware\\'.$middlewareName;
     $middleware = new $middlewareName();
     $middleware->handle(self::$Request, self::$Response);
   }
@@ -88,6 +104,7 @@ class Core {
     self::$DatabaseConfig = require_once(GLOBAL_DIR.'/config/database.php');
     self::$CacheConfig = require_once(GLOBAL_DIR.'/config/cache.php');
     self::$QueueConfig = require_once(GLOBAL_DIR.'/config/queue.php');
+    self::$ModulesConfig = require_once(GLOBAL_DIR.'/config/modules.php');
   }
   /**
    * Подгрузить кеши
@@ -165,11 +182,32 @@ class Core {
   }
   /**
    * Запуск регистрации всех маршрутов
+   * Регистрируются маршруты всех подключенных модулей
    */
   private function _registerRoutes() : void
   {
-    $Routes = new \App\Routes();
-    $Routes->_register(self::$Router);
+    for ($i = 0; $i < count(self::$Modules); $i++) {
+      self::$ModuleWatching = self::$Modules[$i];
+      $routesName = '\\' . self::$Modules[$i] . '\\Routes';
+      $Routes = new $routesName();
+      $Routes->_register(self::$Router);
+    }
+  }
+
+  /**
+   * Подгрузка сущностей всех подключенных модулей
+   */
+  private function loadModulesEntities() : void
+  {
+    for ($i = 0; $i < count(self::$Modules); $i++) {
+      if (self::$Modules[$i] == 'App') continue;
+      $entityLoaderName = '\\' . self::$Modules[$i] . '\\EntityLoader';
+      $entityLoader = new $entityLoaderName();
+      $moduleEntities = $entityLoader->_register();
+      for ($x = 0; $x < count($moduleEntities); $x++) {
+        self::$ModulesEntities[] = '\\' . self::$Modules[$i] . '\\Entities\\' . $moduleEntities[$x];
+      }
+    }
   }
 }
 ?>

@@ -11,6 +11,7 @@ class Router {
       'method' => 'GET',
       'callback' => $callback,
       'middlewares' => $middlewares,
+      'module' => Core::$ModuleWatching,
     ];
     return $this;
   }
@@ -21,6 +22,7 @@ class Router {
       'method' => 'POST',
       'callback' => $callback,
       'middlewares' => $middlewares,
+      'module' => Core::$ModuleWatching,
     ];
     return $this;
   }
@@ -31,6 +33,7 @@ class Router {
       'method' => 'OPTIONS',
       'callback' => $callback,
       'middlewares' => $middlewares,
+      'module' => Core::$ModuleWatching,
     ];
     return $this;
   }

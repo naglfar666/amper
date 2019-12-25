@@ -24,11 +24,18 @@ class Entity {
   public function _registerEntities() : void
   {
     self::$Entities = [];
+
+    // Объединяем сущности модулей и основного приложения
+    $CoreEntities = [];
+    for ($i = 0; $i < count(Core::$DatabaseConfig['entities']); $i++) {
+      $CoreEntities[] = '\\App\\Entities\\' . Core::$DatabaseConfig['entities'][$i];
+    }
     // Получаем все подключенные сущности
-    $Entities = Core::$DatabaseConfig['entities'];
+    $Entities = array_merge($CoreEntities, Core::$ModulesEntities);
+
     foreach ($Entities as $entity) {
       // Получаем класс каждой сущности
-      $Data = new \ReflectionClass('\\App\\Entities\\'.$entity);
+      $Data = new \ReflectionClass($entity);
       $Properties = $Data->getProperties(); // Все свойства сущности
       $Methods = $Data->getMethods(); // Все методы сущности
       $Entity_Name = $Data->getName(); // Имя сущности с пространствами имен
