@@ -103,6 +103,53 @@ class Entity {
 
     return $result;
   }
+
+
+  /**
+   * Transformes input data to corresponding type of its entity
+   * @param $vartype
+   * @param $data
+   * @return bool|float|int|string
+   */
+  private function transform_type($vartype, $data)
+  {
+    switch ($vartype) {
+      case 'varstring':
+        return (string) $data;
+      case 'varinteger':
+        return (int) $data;
+      case 'varfloat':
+        return (float) $data;
+      case 'boolean':
+        return (bool) $data;
+      case 'Boolean':
+        return (bool) $data;
+      case 'bool':
+        return (bool) $data;
+    }
+    return $data;
+  }
+
+
+  /**
+   * loads assoc array to Entity so we can deal with entity easily without setting props manually
+   * @param array $dataToLoad
+   */
+  protected function load(array $dataToLoad) : void
+  {
+    $fields = $this->getFields();
+    $properties = $this->getProperties();
+
+    $info = $this->getEntityInfo();
+
+    for ($i = 0; $i < count($fields); $i++) {
+      $method = 'set'.ucfirst($properties[$i]);
+      $vartype = preg_replace('/\\r/', '', $info['properties'][$properties[$i]][count($info['properties'][$properties[$i]])-1]['annotation']);
+      $this->$method($this->transform_type($vartype, $dataToLoad[$fields[$i]]));
+    }
+
+  }
+
   /**
    * Получение таблицы сущности
    */
